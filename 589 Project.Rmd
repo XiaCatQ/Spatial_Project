@@ -1,0 +1,212 @@
+---
+title: "586 Project"
+author: "Xinyu Dong"
+date: "2023-04-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Descrption 
+The sage thrasher is a medium-sized passerine bird from the family Mimidae, which also includes mockingbirds, tremblers, and New World catbirds. It is the only member of the genus Oreoscoptes. This seems less close to the Caribbean thrashers, but rather to the mockingbirds instead.
+
+The Sage Thrasher is one of the rarest birds in Canada. Prior to 1930, there were 30 or more nesting pairs at up to six sites; in recent years, only 4 - 10 pairs have been seen at one or two sites. Over the past 70 years, there has been an estimated 50 percent loss of habitat for the Sage Thrasher. Heavy grazing and clearing of sagebrush to improve range conditions has seriously affected the availability of suitable nesting areas. The preservation of remaining Sage Thrashers depends on the careful management of remaining large tracts of dense sagebrush habitat. Heavy grazing of sagebrush sites should be avoided, and areas cleared of sagebrush should be restored whenever possible.
+
+The data used in this reports come from `eBirds`. `eBird` is a collective enterprise that takes a novel approach to citizen science by developing cooperative partnerships among experts in a wide range of fields: population ecologists, conservation biologists, quantitative ecologists, statisticians, computer scientists, GIS and informatics specialists, application developers, and data administrators.
+
+## Data Processing 
+```{r,message=FALSE}
+# Import the Bird Data 
+library(readr)
+BC_data <- read_csv("BC_data.csv")
+
+BC_data <- BC_data[, colSums(!is.na(BC_data)) > 0]
+
+# Import Covariate data
+load("BC_Covariates.Rda")
+
+
+
+# Construct ppp data
+```
+
+
+```{r,message=FALSE}
+# Load required packages
+library(sp)
+library(dplyr)
+library(sf)
+library(spatstat)
+library(maptools)
+
+# Read occurrence records from CSV file
+df <- read.csv("BC_data.csv", stringsAsFactors = FALSE)
+
+
+
+# Convert latitude and longitude to spatial points and transform to BC Albers projection
+coord <- df[,c('decimalLatitude','decimalLongitude')]
+coord <- na.omit(coord)
+
+#Convert the coordinate
+coordinates(coord)<- ~decimalLongitude+decimalLatitude
+proj4string(coord) <- CRS("+proj=longlat +datum=WGS84")
+coord_conv <- spTransform(coord,CRS("+proj=aea +lat_0=45 +lon_0=-126 +lat_1=50 +lat_2=58.5 +x_0=1000000 +y_0=0 +datum=NAD83 +units=m +no_defs"))
+
+
+# Read in environmental variables
+load("BC_Covariates.Rda")
+
+win = as.owin(DATA$Window)
+ppp_birds <- ppp(coord_conv@coords[,1], 
+                 coord_conv@coords[,2], 
+                 window=win)
+```
+
+
+```{r}
+#plot(ppp_birds)
+
+cutted <- cut(DATA$Elevation,
+         5,
+         labels = c("Low", "Medium-Low", "Medium", "Medium-High", "High"))
+plot(cut(DATA$Elevation,
+         5,
+         labels = c("Low", "Medium-Low", "Medium", "Medium-High", "High")),
+     main = "Elevation classes")
+     #,ylim=c(369043,800000))
+#overlay the park locations
+points(ppp_birds$x, ppp_birds$y, pch = 19, col = "white", cex = 0.6)
+       #,ylim=c(369043,800000))
+points(ppp_birds$x, ppp_birds$y, pch = 19, col = "black", cex = 0.4)
+       #,ylim=c(369043,800000))
+
+
+```
+
+## Variable of Intrest
+```{r}
+plot(DATA$HFI)
+points(ppp_birds$x, ppp_birds$y, pch = 19, col = "white", cex = 0.6)
+points(ppp_birds$x, ppp_birds$y, pch = 19, col = "black", cex = 0.4)
+
+```
+
+
+```{r}
+plot(DATA$Dist_Water)
+points(ppp_birds$x, ppp_birds$y, pch = 19, col = "white", cex = 0.6)
+points(ppp_birds$x, ppp_birds$y, pch = 19, col = "black", cex = 0.4)
+
+```
+
+```{r}
+plot(density(data.frame(DATA$Dist_Water)$value), 
+     main = "KDE for Oreoscoptes montanus and general BC ", col = 1)
+
+lines(density(DATA$Dist_Water[ppp_birds]), 
+      col = 2, 
+      lty = 2)
+
+
+legend("topright", legend = c("Distance from water of montanus", "Distance from water of BC"),
+       col = 1:2, lty = 1:2
+       )
+```
+
+- We can see the the distribution density of Oreoscoptes montanus is highly related to the `The distance to water`. Therefore, we will adopt this variabel as our covariable to
+further investigate how the distribution of Oreoscoptes montanus is related to the distance to water.
+
+```{r}
+plot(density(data.frame(DATA$Elevation)$value), 
+     main = "KDE for Oreoscoptes montanus and general BC ", col = 1)
+
+lines(density(DATA$Elevation[ppp_birds]), 
+      col = 2, 
+      lty = 2)
+
+
+legend("topright", legend = c("Elevation from water of BC","Elevation montanus"),
+       col = 1:2, lty = 1:2
+       )
+```
+
+
+
+## Distribution Pattern 
+
+### Kernel Likelihoood Estimation(Meaningless)
+```{r}
+# Kernel density
+lambda_u_hat <- density(ppp_birds,sigma = bw.ppl) # Hotspot Analysis
+# Visualise kernel
+plot(lambda_u_hat,
+     main = "Kernel estimate of Park intensity")
+
+#plot(ppp_birds,
+#     pch = 16,
+#     cex = 0.6,
+#     cols = "white",
+#     add = T)
+#plot(ppp_birds,
+#     pch = 16,
+#     cex = 0.5,
+#     cols = "lightblue",
+#     add = T)
+```
+
+### Hotspot Analysis
+```{r}
+# Hotspot Analysis
+# Estimate R
+R <- bw.ppl(ppp_birds) #Calculate test statistic
+LR <- scanLRTS(ppp_birds, r = R)
+#Plot the output
+plot(LR)
+#plot(bc_parks[[2]], add = TRUE)
+```
+
+The hopspot for the is in the Osoyoos. 
+
+## Co-variates  `Distance to Water`
+
+### $\rho$ Function 
+```{r}
+
+#Extract dis  to water  information
+disw <- DATA$Dist_Water #Estimate Rho
+rho <- rhohat(ppp_birds, disw)
+
+plot(rho,xlim = c(0, max(DATA$Dist_Water)))
+
+
+
+```
+
+
+For Oreoscoptes montanus, they seems to have a specific preference for habitants in terms of the distance to water. From the graph, there is a narrow bandth. 
+
+
+
+```{r}
+elev <- DATA$Elevation #Estimate Rho
+rho <- rhohat(ppp_birds, elev)
+
+plot(rho,xlim = c(0, max(DATA$Elevation)))
+```
+For Oreoscoptes montanus, they seems have two clusters: one group living near the 0 elevation, and another group lives in around 500m. 
+
+
+To conclude, `distance to water` is an good candidate of co-variates, and `elevation` has the potential to be a sedonary covariates. We will use those two in our Regression Analysis. 
+
+### Regression 
+Now we konw that `distance to water` plays a crucial role if we want to dig out where we could find these birds, which only mean this varible can help us even *predict* where this birds will live, based on theri current habitats.
+
+This is of crucial meaning in identify potential location for re-habitation.  ....
+
+```{r}
+
+```
+

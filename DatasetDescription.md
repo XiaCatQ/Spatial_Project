@@ -16,4 +16,4 @@
 
 - A metadata file, 'metadata.xml': This xml file stores all the information describing the contents of the downloaded dataset.
 
-- A descriptor metadata file, 'meta.xml': This xml file describes the structure of the Darwin Core Archive so the whole archive can be processed automatically by software.
+- A descriptor metadata file, 'meta.xml': This xml file describes the structure of the Darwin Core Archive so the whole archive can be processed automatically by software. 
