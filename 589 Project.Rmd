@@ -134,6 +134,21 @@ legend("topright", legend = c("Elevation from water of BC","Elevation montanus")
 ```
 
 
+```{r}
+plot(density(data.frame(DATA$HFI)$value), 
+     main = "KDE for Oreoscoptes montanus and general BC ", col = 1)
+
+lines(density(DATA$HFI[ppp_birds]), 
+      col = 2, 
+      lty = 2)
+
+
+legend("topright", legend = c("Elevation from water of BC","Elevation montanus"),
+       col = 1:2, lty = 1:2
+       )
+```
+
+
 
 ## Distribution Pattern 
 
@@ -170,7 +185,7 @@ plot(LR)
 
 The hopspot for the is in the Osoyoos. 
 
-## Co-variates  `Distance to Water`
+## Co-variates  check 
 
 ### $\rho$ Function 
 ```{r}
@@ -200,13 +215,199 @@ For Oreoscoptes montanus, they seems have two clusters: one group living near th
 
 
 To conclude, `distance to water` is an good candidate of co-variates, and `elevation` has the potential to be a sedonary covariates. We will use those two in our Regression Analysis. 
+`
 
-### Regression 
-Now we konw that `distance to water` plays a crucial role if we want to dig out where we could find these birds, which only mean this varible can help us even *predict* where this birds will live, based on theri current habitats.
+
+## Regression 
+Now we konw that `distance to water` and `elevation` plays a crucial role if we want to dig out where we could find these birds, which only mean this varible can help us even *predict* where this birds will live, based on theri current habitats.
 
 This is of crucial meaning in identify potential location for re-habitation.  ....
 
+
+
+
+Based on the initial graph, a reasonable form of the model is 
+
+
+$$
+\lambda_{\text {B. occ }}(u)=e^{\beta_0+\beta_1 \text { elevation }(u)+\beta_2 \text { elevation }(u)^2+\beta_3 \operatorname{dist water}(u)+\beta_4 \operatorname{dist water}(u)^2}
+$$
+
+
 ```{r}
+#Fit the PPP model
+
+library(spatstat)
+
+mu <- mean(DATA$Elevation)
+stdev <- sd(DATA$Elevation)
+DATA$Elevation_scaled <- eval.im((Elevation - mu)/stdev, DATA)
+
+mu <- mean(DATA$Dist_Water)
+stdev <- sd(DATA$Dist_Water)
+DATA$Dist_Water_scaled <- eval.im((Dist_Water - mu)/stdev, DATA)
+
+# Fit the model with scaled covariates
+fit <- ppm(ppp_birds ~ Elevation_scaled + I(Elevation_scaled^2) + Dist_Water_scaled + I(Dist_Water_scaled^2),
+           data = DATA)
+
+# This doesnt coverage, maybe to complicated 
+```
+
+
+```{r}
+fit <- ppm(ppp_birds ~ Elevation_scaled + Dist_Water_scaled + I(Dist_Water_scaled^2),
+           data = DATA)
+# View the model summary
+
+
+
+coef(summary(fit))
 
 ```
 
+
+
+The coefficients are all statistically significant, and suggest that $\lambda(u)$
+ can be estimated as:
+$$
+To .. be ..typed ..
+$$
+
+
+```{r}
+#Plot the model predictions
+plot(fit,
+     se = FALSE,
+     superimpose = FALSE)
+
+#Overlay the B. pendula locations
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.7,
+     cols = "white",
+     add = TRUE)
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.5,
+     cols = "black",
+     add = TRUE)
+```
+```{r}
+#Mean disw
+#E_disw <- mean(DATA$Dist_Water_scaled) # just 0
+
+#Elevational effect on lambda at mean disw
+elev_effect <- effectfun(fit, "Elevation_scaled", Dist_Water_scaled = 0, se.fit = T)
+
+disw_effect <- effectfun(fit, "Dist_Water_scaled", Elevation_scaled = 0, se.fit = T)
+
+
+
+#Side by side plotting
+par(mfrow = c(1,2))
+
+#Plot the elevation effect 
+
+plot(elev_effect,
+     legend = FALSE,
+     main = "Elevation effect at mean distance to water ")
+plot(disw_effect,
+     legend = FALSE,
+     main = "Distance to Water  effect at mean elevation ")
+
+```
+
+
+
+## Model Validation 
+### Quadrat counting
+```{r}
+#Run the quadrat test
+quadrat.test(fit, nx = 2, ny = 4)
+```
+The small p value tells us that there’s a significant deviation from our model’s predictions. Let us dig out how to improve it.
+
+
+### Partial residual plots
+```{r}
+#Calculate the partial residuals as a function of elevation
+par_res_elev <- parres(fit, "Elevation_scaled")
+
+#Calculate the relative intensity as a function of gradient
+par_res_disw <- parres(fit, "Dist_Water_scaled")
+
+#Side by side plotting
+par(mfrow = c(1,2))
+plot(par_res_elev,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Elevation_scaled")
+plot(par_res_disw,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Dist_Water_scaled)")
+```
+
+From these figures we can see that the quadratic terms are not capturing the patterns in our data particularly well. As an improvement, we could try adding higher-order polynomials, but polynomials can be unstable. In this situation, it may be worth switching from a linear modelling framework, to an additive modelling framework (i.e., GAMs). 
+
+### GAM Not Valid,still 'df' was too small
+```{r}
+library(splines)
+
+#Fit the PPP model
+fit_smooth <- ppm(ppp_birds ~ bs(Elevation_scaled,2) + bs(Dist_Water_scaled, 3), data = DATA, use.gam = TRUE)
+
+fit_smooth
+```
+```{r}
+#Calculate the partial residuals as a function of elevation
+par_res_elev <- parres(fit_smooth, "Elevation_scaled")
+
+#Calculate the relative intensity as a function of gradient
+par_res_disw <- parres(fit_smooth, "Dist_Water_scaled")
+
+#Side by side plotting
+par(mfrow = c(1,2))
+plot(par_res_elev,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Elevation_scaled")
+plot(par_res_disw,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Dist_Water_scaled)")
+```
+
+```{r}
+#Plot the model predictions
+plot(fit_smooth,
+     se = FALSE,
+     superimpose = FALSE)
+
+#Overlay the B. pendula locations
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.7,
+     cols = "white",
+     add = TRUE)
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.5,
+     cols = "black",
+     add = TRUE)
+```
+
+- For a `GAM`, model, it looks like we do not have enough data to fit.
+
+
+## Conclusion 
+- The partial graph, still does not go well to capture the distribution. 
+- The reason is more more the variables selection rather than the model.
+- Though `The distance to water` and `elevation` may be explainable in some sense, to accurately fit the location, we may need more co-variate.
+- For example, a reasonable guess is the average temperature, as all this species are densely located in the south end of BC. 
+- To further improve the fitting, we can incoprate `temperature` to our model 
