@@ -84,6 +84,9 @@ co <- coef(fit2)
 #Run the quadrat test
 quadrat.test(fit2, nx = 2, ny = 4)
 
+#Fit the PPP model
+fit_smooth <- ppm(ppp_birds ~ bs(Elevation_scaled,3) + bs(Dist_Water_scaled, 3), data = DATA, use.gam = TRUE)
+
 
 ```
 
