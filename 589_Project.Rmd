@@ -364,7 +364,7 @@ This is of crucial meaning in identify potential location for re-habitation.  ..
 
 By looking at Figure 1, we can see that the data is not homogeneous dataset as the birds tend to be clustered in south areas of BC, whereas others have no birds at all, and we conduct a quardratic test to support the inhomogeneous assumption (small p-value). Figure 2 illustrates the hotspot is Osoyoos of the dataset. 
 
-```{r, warning=FALSE, fig.cap= "Oreoscoptes in BC"}
+```{r, warning=FALSE, fig.cap= "Figure 1: Oreoscoptes in BC"}
 # Check the spread of the bird `ppp_birds`
 plot(ppp_birds, main = "Spread of Oreoscoptes")
 
@@ -373,7 +373,7 @@ Q <- quadratcount(ppp_birds, nx = 10, ny = 10)
 quadrat.test(Q)
 ```
 
-```{r, warning=FALSE, fig.cap= "Hotspot of Oreoscoptes in BC"}
+```{r, warning=FALSE, fig.cap= "Figure 2: Hotspot of Oreoscoptes in BC"}
 # Hot spot analysis to identify areas of elevated intensity
 ## Estimate R
 R <- bw.ppl(ppp_birds)
@@ -387,11 +387,11 @@ plot(LR)
 
 There are four potential covariates in BC_Covariates.Rda, Elevation, Forest, HFI, and Dist_Water. It's hard to tell the relationship between them and intensity, so we used kernel estimation to detect it. Figure 3 shows that there seems to be two clusters: one group living near the 0 elevation, and another group lives in around 500m, and there is a non-linear relationship between elevation and bird intensity. The narrow bandth in Figure 4 describes a specific preference for habitants in terms of the distance to water, and a non-linear relationship between it and bird intensity as well. We exclude `Forest` and `HFI` here because of wider bandwidths.
 
-```{r, warning=FALSE, fig.cap= "Relationship Diagnosis - Elevation"}
+```{r, warning=FALSE, fig.cap= "Figure 3: Relationship Diagnosis - Elevation"}
 plot(rho_elev, xlim = c(0, max(DATA$Elevation)))
 ```
 
-```{r, warning=FALSE, fig.cap= "Relationship Diagnosis - Water Distance"}
+```{r, warning=FALSE, fig.cap= "Figure 4: Relationship Diagnosis - Water Distance"}
 plot(rho_dist_water, xlim = c(0, max(DATA$Dist_Water)))
 ```
 
@@ -403,7 +403,7 @@ $\lambda(u)$ = exp(`r co[1]` + `r co[2]` * Elevation_scaled + `r co[3]` * Dist_W
 
 Figure 5 shows that with these two covariates, the model did not perform well because we can see that there's no bird observations(dots) in high prediction(yellow) area. To see how individual coefficients affect the intensity, please follow figure 6. It indicates that `Elevation` has negative marginal effect before it reaches its mean value (`Elevation_scaled` > 0). On the other hand, `Distance_Water` has greatest marginal effect at 2 standard deviation away from its mean value and then the effect goes down.
 
-```{r, warning=FALSE, fig.cap= "Model Fitting - Fitted Plot"}
+```{r, warning=FALSE, fig.cap= "Figure 5: Model Fitting - Fitted Plot"}
 plot(fit2,
      se = FALSE,
      superimpose = FALSE)
@@ -419,7 +419,7 @@ plot(ppp_birds,
      cols = "black",
      add = TRUE)
 ```
-```{r, warning=FALSE, fig.cap= "Individual Effect"}
+```{r, warning=FALSE, fig.cap= "Figure 6: Individual Effect"}
 #Mean disw
 #E_disw <- mean(DATA$Dist_Water_scaled) # just 0
 
@@ -448,7 +448,7 @@ Though by Figure 5 we can see that the model did not fit well to our dataset, we
 #Run the quadrat test
 quadrat.test(fit2, nx = 2, ny = 4)
 ```
-```{r, warning=FALSE, fig.cap= "Residual Plot for Model 2"}
+```{r, warning=FALSE, fig.cap= "Figure 7: Residual Plot for Model 2"}
 #Calculate the partial residuals as a function of elevation
 par_res_elev <- parres(fit2, "Elevation_scaled")
 
@@ -470,7 +470,7 @@ plot(par_res_disw,
 ```
 With a gam with degree of freedom 3 for both covariate, Figure 8 shows that the spline term still could not capture the trends. And Figure 9 illustrates that the model still not fit the dataset.
 
-```{r}
+```{r, warning=FALSE, fig.cap= "Figure 8: Residual Plot for GAM"}
 #Calculate the partial residuals as a function of elevation
 par_res_elev <- parres(fit_smooth, "Elevation_scaled")
 
@@ -491,7 +491,7 @@ plot(par_res_disw,
      xlab = "Dist_Water_scaled")
 ```
 
-```{r}
+```{r, warning=FALSE, fig.cap= "Figure 9: Model Fitting - GAM Fitted Plot"}
 #Plot the model predictions
 plot(fit_smooth,
      se = FALSE,
