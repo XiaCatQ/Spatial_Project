@@ -136,3 +136,142 @@ fit2
 co <- coef(fit2)
 ```
 
+5. Model Validation
+```{r}
+# Model visualisation
+plot(fit2,
+     se = FALSE,
+     superimpose = FALSE)
+
+#Overlay the B. pendula locations
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.7,
+     cols = "white",
+     add = TRUE)
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.5,
+     cols = "black",
+     add = TRUE)
+
+#Mean disw
+#E_disw <- mean(DATA$Dist_Water_scaled) # just 0
+
+#Elevational effect on lambda at mean disw
+elev_effect <- effectfun(fit2, "Elevation_scaled", Dist_Water_scaled = 0, se.fit = T)
+
+disw_effect <- effectfun(fit2, "Dist_Water_scaled", Elevation_scaled = 0, se.fit = T)
+
+
+
+#Side by side plotting
+par(mfrow = c(1,2))
+
+#Plot the elevation effect 
+
+plot(elev_effect,
+     legend = FALSE,
+     main = "Elevation effect at mean distance to water ")
+plot(disw_effect,
+     legend = FALSE,
+     main = "Distance to Water  effect at mean elevation ")
+
+```
+
+# Quardratic Counting by `quadrat.test(fit2, nx = 2, ny = 4)`
+
+# Partial Residual Plots
+```
+
+
+
+
+
+## Model Validation 
+### Quadrat counting
+```{r}
+#Run the quadrat test
+quadrat.test(fit2, nx = 2, ny = 4)
+```
+The small p value tells us that there’s a significant deviation from our model’s predictions. Let us dig out how to improve it.
+
+
+### Partial residual plots
+```{r}
+#Calculate the partial residuals as a function of elevation
+par_res_elev <- parres(fit2, "Elevation_scaled")
+
+#Calculate the relative intensity as a function of gradient
+par_res_disw <- parres(fit2, "Dist_Water_scaled")
+
+#Side by side plotting
+par(mfrow = c(1,2))
+plot(par_res_elev,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Elevation_scaled")
+plot(par_res_disw,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Dist_Water_scaled)")
+```
+
+From these figures we can see that the quadratic terms are not capturing the patterns in our data particularly well. As an improvement, we could try adding higher-order polynomials, but polynomials can be unstable. In this situation, it may be worth switching from a linear modelling framework, to an additive modelling framework (i.e., GAMs). 
+
+### GAM Not Valid,still 'df' was too small
+```{r}
+library(splines)
+
+#Fit the PPP model
+fit_smooth <- ppm(ppp_birds ~ bs(Elevation_scaled,2) + bs(Dist_Water_scaled, 3), data = DATA, use.gam = TRUE)
+
+fit_smooth
+```
+```{r}
+#Calculate the partial residuals as a function of elevation
+par_res_elev <- parres(fit_smooth, "Elevation_scaled")
+
+#Calculate the relative intensity as a function of gradient
+par_res_disw <- parres(fit_smooth, "Dist_Water_scaled")
+
+#Side by side plotting
+par(mfrow = c(1,2))
+plot(par_res_elev,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Elevation_scaled")
+plot(par_res_disw,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Dist_Water_scaled)")
+```
+
+```{r}
+#Plot the model predictions
+plot(fit_smooth,
+     se = FALSE,
+     superimpose = FALSE)
+
+#Overlay the B. pendula locations
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.7,
+     cols = "white",
+     add = TRUE)
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.5,
+     cols = "black",
+     add = TRUE)
+```
+
+- For a `GAM`, model, it looks like we do not have enough data to fit.
+
+
+
+
