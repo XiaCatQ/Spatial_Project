@@ -345,9 +345,73 @@ However, when we tried to fit first model, it failed to converge. Hence, we simp
 
 $\lambda(u)$ = exp(`r co[1]` + `r co[2]` * Elevation_scaled + `r co[3]` * Dist_Water_scaled + `r co[4]` * I(Dist_Water_scaled^2))
 
-To see how the model
+Figure 5 shows that with these two covariates, the model did not perform well because we can see that there's no bird observations(dots) in high prediction(yellow) area. To see how individual coefficients affect the intensity, please follow figure 6. It indicates that `Elevation` has negative marginal effect before it reaches its mean value (`Elevation_scaled` > 0). On the other hand, `Distance_Water` has greatest marginal effect at 2 standard deviation away from its mean value and then the effect goes down.
+
+```{r, warning=FALSE, fig.cap= "Model Fitting - Fitted Plot"}
+plot(fit2,
+     se = FALSE,
+     superimpose = FALSE)
+     
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.7,
+     cols = "white",
+     add = TRUE)
+plot(ppp_birds,
+     pch = 16,
+     cex = 0.5,
+     cols = "black",
+     add = TRUE)
+```
+```{r, warning=FALSE, fig.cap= "Individual Effect"}
+#Mean disw
+#E_disw <- mean(DATA$Dist_Water_scaled) # just 0
+
+#Elevational effect on lambda at mean disw
+elev_effect <- effectfun(fit2, "Elevation_scaled", Dist_Water_scaled = 0, se.fit = T)
+
+disw_effect <- effectfun(fit2, "Dist_Water_scaled", Elevation_scaled = 0, se.fit = T)
 
 
+
+#Side by side plotting
+par(mfrow = c(1,2))
+
+#Plot the elevation effect 
+
+plot(elev_effect,
+     legend = FALSE,
+     main = "Elevation Effect")
+plot(disw_effect,
+     legend = FALSE,
+     main = "Distance to Water  Effect")
+```
+Though by Figure 5 we can see that the model did not fit well to our dataset, we performed a quardratic test to be more sure about it. The small p-value shows that there’s a significant deviation from our model’s predictions. Hence, we used the residual plot to see how to enhance it. 
+
+```{r}
+#Run the quadrat test
+quadrat.test(fit2, nx = 2, ny = 4)
+```
+```{r, warning=FALSE, fig.cap= "Residual Plot for Model 2"}
+#Calculate the partial residuals as a function of elevation
+par_res_elev <- parres(fit, "Elevation_scaled")
+
+#Calculate the relative intensity as a function of gradient
+par_res_disw <- parres(fit, "Dist_Water_scaled")
+
+#Side by side plotting
+par(mfrow = c(1,2))
+plot(par_res_elev,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Elevation_scaled")
+plot(par_res_disw,
+     legend = FALSE,
+     lwd = 2,
+     main = "",
+     xlab = "Dist_Water_scaled)")
+```
 
 ## Conclusion 
 - The partial graph, still does not go well to capture the distribution. 
