@@ -95,19 +95,19 @@ fit_smooth <- ppm(ppp_birds ~ bs(Elevation_scaled,3) + bs(Dist_Water_scaled, 3),
 
 Wildlife preservation in British Columbia (BC) is an important topic to address. Having diverse wildlife could lead to a number of benefits, such as thriving ecosystems (e.g. diverse species lead to more balanced and resilient ecosystems; Ferrero & Troìa, 2021), or economic benefits (e.g. BC’s natural environment is a factor that attracts many tourists yearly, and having wildlife diversity is important to maintaining the health of BC’s nature).
 
-One wildlife species that may be important to conserve is the Sage Thrasher (oreoscoptes montanus). In BC, the population of the sage thrasher has been in decline, due to a number of factors, such as climate change or human activity (e.g. urbanization or agricultural expansion). For example, estimates have shown up to a 50% decline in sage thrasher population over the past century. Furthermore, the sage thrasher has also been designated as endangered by BC Ministry of Environment, and is generally considered a rare bird species in Canada (British Columbia Ministry of Environment and Climate Change Strategy, 2019).
+One wildlife species that may be important to conserve is the Sage Thrasher (oreoscoptes montanus). In BC, the population of the Sage Thrasher has been in decline, due to a number of factors, such as climate change or human activity (e.g. urbanization or agricultural expansion). For example, estimates have shown up to a 50% decline in Sage Thrasher population over the past century. Furthermore, the Sage Thrasher has also been designated as endangered by BC Ministry of Environment, and is generally considered a rare bird species in Canada (British Columbia Ministry of Environment and Climate Change Strategy, 2019).
 
-As such, the current investigation aims to investigate ways to preserve the conversation of sage thrashers in BC by conducting a spatial statistical analysis of the species in BC. In particular, we focus on three questions. First, we examine the spatial distribution of sage thrashers in BC (e.g., understanding where sage thrashers are situated could help understanding of where to avoid human expansion). Second, we examine the environmental covariates that are linked to the population of sage thrashers (e.g., understanding factors that promote or hinder sage thrasher population could lead to insights on how to cultivate this species). Third, we build regression models that use covariates to predict the geographical intensity of sage thrashers (e.g., this may lead to insights of geographical areas where environmental conditions are suitable to cultivate new populations of sage thrashers).
+As such, the current investigation aims to investigate ways to preserve the conversation of Sage Thrashers in BC by conducting a spatial statistical analysis of the species in BC. In particular, we focus on three questions. First, we examine the spatial distribution of Sage Thrashers in BC (e.g., understanding where Sage Thrashers are situated could help understanding of where to avoid human expansion). Second, we examine the environmental covariates that are linked to the population of Sage Thrashers (e.g., understanding factors that promote or hinder Sage Thrasher population could lead to insights on how to cultivate this species). Third, we build regression models that use covariates to predict the geographical intensity of Sage Thrashers (e.g., this may lead to insights of geographical areas where environmental conditions are suitable to cultivate new populations of Sage Thrashers).
 
 ## Methods  
 
-### Data Description: Briefly describe the data and what variables are included. 
+### Data Description
 
-To investigate our research question of how we could preserve sage thrasher population, we downloaded data on sage thrashers from the Global Biodiversity Information Factility (GBIF, 2023). This dataset contains information about where sage thrashers have been sighted (e.g., country, coordinates), of which contains 850 samples in British Columbia. To examine how covariates are related to sage thrasher populations, we obtained data on BC environmental covariates provided by Michael Noonan (Noonan, 2022). This dataset contains measurements on four environmental covariates (that is, elevation, distance to water, forest, and HFI) across spatial areas in BC (ranging from one million to 7 million measurements). 
+To investigate our research question of how we could preserve Sage Thrasher population, we downloaded data of Sage Thrashers from the Global Biodiversity Information Factility (GBIF, 2023). This dataset contains information about where Sage Thrashers have been sighted (e.g., country, coordinates), of which contains 850 samples in British Columbia. To examine how covariates are related to Sage Thrasher populations, we obtained data on BC environmental covariates provided by Michael Noonan (Noonan, 2022). This dataset contains measurements on four environmental covariates (that is, elevation, distance to water, forest, and HFI) across spatial areas in BC (ranging from one million to 7 million measurements). 
 
 ### Detailed Analytical Workflow
 
-Our statistical analysis process involved the following four steps: 1) Preparing the data for analysis, such as obtaining and wrangling data, 2) Conducting spatial distributional analysis of sage thrashers, 3) Linking environmental covariates to sage thrashers, 4) Creating regression models for sage thrashers.
+Our statistical analysis process involved the following four steps: 1) Preparing the data for analysis, such as obtaining and wrangling data, 2) Conducting spatial distributional analysis of Sage Thrashers, 3) Linking environmental covariates to Sage Thrashers, 4) Creating regression models for Sage Thrashers.
 
 #### 1) Data Preparation
 
@@ -358,7 +358,7 @@ Our statistical analysis process involved the following four steps: 1) Preparing
          add = TRUE)
      ```
   
-#### Packages Employed. 
+#### 5) Statistical Packages
 
 1. sp: A package providing classes and methods for spatial data: points, lines, polygons and grids
 
@@ -375,8 +375,6 @@ Our statistical analysis process involved the following four steps: 1) Preparing
 7. splines: Create cubic functions.
 
 ## Results
-
-### 2) Spatial Analysis of Sage Thrashers
 
 By looking at Figure 1, we can see that the data is not homogeneous dataset as the birds tend to be clustered in south areas of BC, whereas others have no birds at all, and we conduct a quardratic test to support the inhomogeneous assumption (small p-value). Figure 2 illustrates the hotspot is Osoyoos of the dataset. 
 
@@ -401,8 +399,6 @@ LR <- scanLRTS(ppp_birds, r = R)
 plot(LR)
 ```
 
-### 3) Linking Environmental Covariates to Sage Thrashers
-
 There are four potential covariates in BC_Covariates.Rda, Elevation, Forest, HFI, and Dist_Water. It's hard to tell the relationship between them and intensity, so we used kernel estimation to detect it. Figure 3 shows that there seems to be two clusters: one group living near the 0 elevation, and another group lives in around 500m, and there is a non-linear relationship between elevation and bird intensity. The narrow bandth in Figure 4 describes a specific preference for habitats in terms of the distance to water, and a non-linear relationship between it and bird intensity as well (with one group clustered at 3-5km away from water sources). We exclude `Forest` and `HFI` here because of wider bandwidths.
 
 ```{r, warning=FALSE, fig.cap= "Figure 3: Relationship Diagnosis - Elevation"}
@@ -413,22 +409,17 @@ plot(rho_elev, xlim = c(0, max(DATA$Elevation)))
 plot(rho_dist_water, xlim = c(0, max(DATA$Dist_Water)))
 ```
 
-### 4) Regression Models for Sage Thrashers
-
-4.1) Building the Model
-4.2) Validating the Model
-
 After deciding to use `Elevation` and `Dist_Water` to be candidate of covariates with quardratic effect, we scaled both variables to prevent disproportional impact on bird intesity to build the regression model with formula1: ppp_birds ~ Elevation_scaled + I(Elevation_scaled^2) + Dist_Water_scaled + I(Dist_Water_scaled^2).
 
 However, when we tried to fit first model, it failed to converge. Hence, we simplified our formula to formula2: ppp_birds ~ Elevation_scaled + Dist_Water_scaled + I(Dist_Water_scaled^2) by excluding the I(Elevation_scaled^2) and built a second model. By the Ztest from the model, we can say that all the coefficients are statistically significant. It suggested that the intensity can be estimated by the following function:
 
 $\lambda(u)$ = exp(`r co[1]` + `r co[2]` * Elevation_scaled + `r co[3]` * Dist_Water_scaled + `r co[4]` * I(Dist_Water_scaled^2))
 
-Figure 5 shows that with these two covariates, the model predicts two novel areas: Vancouver Island and Graham Island as suitable areas to cultivate new sage thrasher species.
+Figure 5 shows that with these two covariates, the model predicts two novel areas: Vancouver Island and Graham Island as suitable areas to cultivate new Sage Thrasher species.
 
 However, as will be elaborated upon in the discussion section, these suggestions should be interpreted with caution becauase it is possible that our model may not be making these predictions accurately, as we can see that our model performance may not be accurate, as there are no true observations (observation black dots) model's predicted areas (yellow).
 
-To see how individual coefficients affect the intensity, please follow figure 6. It indicates that `Elevation` has negative marginal effect before it reaches its mean value (`Elevation_scaled` > 0). On the other hand, `Distance_Water` has greatest marginal effect at 2 standard deviation away from its mean value and then the effect goes down.
+To see how individual coefficients affect the intensity, please follow Figure 6. It indicates that `Elevation` has negative marginal effect before it reaches its mean value (`Elevation_scaled` > 0). On the other hand, `Distance_Water` has greatest marginal effect at 2 standard deviation away from its mean value and then the effect goes down.
 
 ```{r, warning=FALSE, fig.cap= "Figure 5: Model Fitting - Fitted Plot"}
 plot(fit2,
@@ -496,9 +487,6 @@ plot(par_res_disw,
      xlab = "Dist_Water_scaled)")
 ```
 
-
-4.3) Advanced GAM Model
-
 With a gam with degree of freedom 3 for both covariate, Figure 8 shows that the spline term still could not capture the trends. And Figure 9 illustrates that the model still not fit the dataset.
 
 ```{r, warning=FALSE, fig.cap= "Figure 8: Residual Plot for GAM"}
@@ -543,13 +531,13 @@ plot(ppp_birds,
 
 ## Discussion 
 
-The present investigation aimed to examine how sage thrasher population could be preserved in BC by focusing on three questions. First, we investigated the spatial distribution of sage thrashers in BC. Our analysis showed that sage thrashers are significantly disproportionately located in the southern areas of BC. Second, we investigated covariates that are linked to sage thrasher populations. Our analysis found that the covariates of elevational height (i.e., low elevations of 0 and 500 meters) and distance to water (i.e. proximities of 3000-5000 meters to water) are predictors that are positively linked to sage thrasher intensity in BC. Third, our analysis investigated regression models to predict areas in which sage thrasher populations would thrive. Our regression models predicted that areas along the western coastlines of BC (e.g. Graham island, Vancouver island) are linked to high intensity of sage thrasher populations.
+The present investigation aimed to examine how Sage Thrasher population could be preserved in BC by focusing on three questions. First, we investigated the spatial distribution of Sage Thrashers in BC. Our analysis showed that Sage Thrashers are significantly disproportionately located in the southern areas of BC. Second, we investigated covariates that are linked to Sage Thrasher populations. Our analysis found that the covariates of elevational height (i.e., low elevations of 0 and 500 meters) and distance to water (i.e. proximities of 3000-5000 meters to water) are predictors that are positively linked to Sage Thrasher intensity in BC. Third, our analysis investigated regression models to predict areas in which Sage Thrasher populations would thrive. Our regression models predicted that areas along the western coastlines of BC (e.g. Graham island, Vancouver island) are linked to high intensity of Sage Thrasher populations.
 
-The findings from the current analysis provide insights into ways that sage thrasher populations could be preserved in BC. First, the analysis suggests that areas in southern BC are primarily where sage thrashers are located (e.g., urbanization of these areas should be discouraged). Second, the analysis suggests that, to cultivate sage thrashers, it would beneficial to build their habitats around 3 to 5 kilometres away from water sources, in elevations of 0 or 500 meters. Third, our analysis predicts that, based off of covariates that predict thriving sage thrasher populations, two new areas that could be suitable to cultivate new populations of sage thrashers are Vancouver Island and Graham islands.
+The findings from the current analysis provide insights into ways that Sage Thrasher populations could be preserved in BC. First, the analysis suggests that areas in southern BC are primarily where Sage Thrashers are located (e.g., urbanization of these areas should be discouraged). Second, the analysis suggests that, to cultivate Sage Thrashers, it would beneficial to build their habitats around 3 to 5 kilometres away from water sources, in elevations of 0 or 500 meters. Third, our analysis predicts that, based off of covariates that predict thriving Sage Thrasher populations, two new areas that could be suitable to cultivate new populations of Sage Thrashers are Vancouver Island and Graham islands.
 
-Although the current analysis provides several insights into sage thrasher conservation, there are also a number of limitations. One limitation relates to the methodology of the study. For example, given the rarity of sage thrashers in BC, there was only a small sample size of sage thrashers (i.e. around 800 sage thrashers) to base our analysis upon, which could limit the statistical accuracy of our findings (e.g., higher likelihood of statistical errors due to small samples). Second, the current analysis was only able to obtain a small number of environmental covariates to link sage thrasher populations to, which may hinder the ability to understand true and more important predictors that may allow sage thrasher populations to thrive (e.g., weather). As such, future studies should aim to incorporate higher sample sizes of sage thrashers, and greater numbers of environmental covariates to link to sage thrashers.
+Although the current analysis provides several insights into Sage Thrasher conservation, there are also a number of limitations. One limitation relates to the methodology of the study. For example, given the rarity of Sage Thrashers in BC, there was only a small sample size of Sage Thrashers (i.e. around 800 Sage Thrashers) to base our analysis upon, which could limit the statistical accuracy of our findings (e.g., higher likelihood of statistical errors due to small samples). Second, the current analysis was only able to obtain a small number of environmental covariates to link Sage Thrasher populations to, which may hinder the ability to understand true and more important predictors that may allow Sage Thrasher populations to thrive (e.g., weather). As such, future studies should aim to incorporate higher sample sizes of Sage Thrashers, and greater numbers of environmental covariates to link to Sage Thrashers.
 
-Another limitation relates to the statistical validity of our findings. For example, although our regression models predicted suitable areas for sage thrasher populations, diagnostics show that our basic and advanced GAM models may not fully capture trends in data effectively. Future studies should xxx.
+Another limitation relates to the statistical validity of our findings. For example, although our regression models predicted suitable areas for Sage Thrasher populations, diagnostics show that our basic and advanced GAM models may not fully capture trends in data effectively. Future studies should xxx.
 
 
 
